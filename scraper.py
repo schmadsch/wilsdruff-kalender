@@ -30,7 +30,7 @@ def fields_from_row(row) -> dict[str, str]:
     text = row.get_text(" ", strip=True)
     labels = ("Datum", "Uhrzeit", "Ort", "Ortszusatz", "Veranstalter")
     label_expr = "|".join(labels)
-    matches = list(re.finditer(rf"(?<!\\w)({label_expr})\\s*:", text, re.I))
+    matches = list(re.finditer(rf"(?<!\w)({label_expr})\s*:", text, re.I))
     result = {}
     for index, match in enumerate(matches):
         end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
@@ -60,9 +60,9 @@ def parse_page(html: bytes, url: str) -> tuple[list[dict], set[int], str | None]
         if extra:
             place = (place + ", " + extra).strip(", ")
         organizer = values.get("veranstalter", "")
-        title_match = re.search(r"\\bDatum\\s*:", text, re.I)
+        title_match = re.search(r"\bDatum\s*:", text, re.I)
         title = text[:title_match.start()].strip(" |;-") if title_match else ""
-        title = re.sub(r"^\\s*Termine\\s*", "", title, flags=re.I).strip()
+        title = re.sub(r"^\s*Termine\s*", "", title, flags=re.I).strip()
         if not title:
             raise ValueError(f"Termin ohne Titel: {text[:200]}")
         day = datetime.strptime(raw_date, "%d.%m.%Y").date()
@@ -113,7 +113,7 @@ def retrieve() -> list[dict]:
             source_count += len(events)
             for event in events:
                 # Erste Quelle gewinnt: UID und Ort bestehender Termine bleiben stabil.
-                key = (re.sub(r"\\s+", " ", event["title"]).casefold(), event["day"])
+                key = (re.sub(r"\s+", " ", event["title"]).casefold(), event["day"])
                 if key not in found:
                     found[key] = event
             if page + 1 not in page_indices:
