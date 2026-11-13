@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Wilsdruff-Termine aus der öffentlichen HTML-Terminliste als iCalendar exportieren.
+"""Städtische Termine und Veranstaltungen als iCalendar exportieren.
 
-Quelle: https://www.wilsdruff.de/wilma.aspx?pgId=645
-Achtung: Die separate Rubrik 'Veranstaltungen' (pgId=20/179) ist noch nicht geprüft.
+Quellen: Verwaltung (pgId=645), Leben/Veranstaltungen (pgId=20).
 """
 from __future__ import annotations
 
@@ -17,7 +16,7 @@ from zoneinfo import ZoneInfo
 import requests
 from bs4 import BeautifulSoup
 
-BASE = "https://www.wilsdruff.de/wilma.aspx?pgId=645"
+SOURCES = [("Verwaltung", 645), ("Veranstaltungen", 20)]
 TZ = ZoneInfo("Europe/Berlin")
 OUTPUT = Path("docs/wilsdruff.ics")
 MAX_PAGES = 30
@@ -26,79 +25,102 @@ TIME_RE = re.compile(r"\b([0-2]?\d:[0-5]\d)\b")
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; WilsdruffKalender/0.3; +https://github.com/schmadsch/wilsdruff-kalender)"}
 
 
-def field(text: str, label: str, next_labels: str) -> str:
-    pattern = rf"(?:^|\s){re.escape(label)}\s*:\s*(.*?)(?=\s+(?:{next_labels})\s*:|$)"
-    match = re.search(pattern, text, re.I | re.S)
-    return match.group(1).strip(" |;-") if match else ""
+def fields_from_row(row) -> dict[str, str]:
+    """Werte auch dann lesen, wenn die Felder anders angeordnet sind."""
+    text = row.get_text(" ", strip=True)
+    labels = ("Datum", "Uhrzeit", "Ort", "Ortszusatz", "Veranstalter")
+    label_expr = "|".join(labels)
+    matches = list(re.finditer(rf"(?<!\\w)({label_expr})\\s*:", text, re.I))
+    result = {}
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        result[match.group(1).lower()] = text[match.end():end].strip(" |;-")
+    return result
 
 
-def parse_page(html: bytes, url: str) -> tuple[list[dict], set[int]]:
+def parse_page(html: bytes, url: str) -> tuple[list[dict], set[int], str | None]:
     soup = BeautifulSoup(html, "html.parser")
     table = soup.select_one("table.idu-cm3-wilma-puzzle-documentlist-table")
     if table is None:
-        raise ValueError("Terminliste 1408 nicht gefunden – HTML-Struktur möglicherweise geändert")
+        raise ValueError("Terminliste nicht gefunden – HTML-Struktur möglicherweise geändert")
 
     events = []
     for tr in table.select("tr"):
         if tr.find_parent("thead"):
             continue
         text = tr.get_text(" ", strip=True)
-        date_match = re.search(r"\bDatum\s*:\s*" + DATE_RE.pattern, text, re.I)
+        values = fields_from_row(tr)
+        date_match = DATE_RE.search(values.get("datum", ""))
         if not date_match:
             continue
         raw_date = date_match.group(1)
-        raw_time = field(text, "Uhrzeit", "Ort|Veranstalter|Datum")
-        time_match = TIME_RE.search(raw_time)
-        place = field(text, "Ort", "Veranstalter|Datum|Uhrzeit")
-        organizer = field(text, "Veranstalter", "Datum|Uhrzeit|Ort")
-        title = text[:date_match.start()].strip(" |;-")
-        title = re.sub(r"^\s*Termine\s*", "", title, flags=re.I).strip()
+        time_match = TIME_RE.search(values.get("uhrzeit", ""))
+        place = values.get("ort", "")
+        extra = values.get("ortszusatz", "")
+        if extra:
+            place = (place + ", " + extra).strip(", ")
+        organizer = values.get("veranstalter", "")
+        title_match = re.search(r"\\bDatum\\s*:", text, re.I)
+        title = text[:title_match.start()].strip(" |;-") if title_match else ""
+        title = re.sub(r"^\\s*Termine\\s*", "", title, flags=re.I).strip()
         if not title:
             raise ValueError(f"Termin ohne Titel: {text[:200]}")
         day = datetime.strptime(raw_date, "%d.%m.%Y").date()
         start = datetime.combine(day, datetime.strptime(time_match.group(0), "%H:%M").time(), TZ) if time_match else None
-        # Ohne explizite Uhrzeit als ganztägig behandeln; 00:00 bleibt 00:00.
         detail_link = next((urljoin(url, a["href"]) for a in tr.select("a[href]")), url)
         events.append(dict(title=title, day=day, start=start, location=place,
                            organizer=organizer, url=detail_link))
 
     page_indices = set()
-    for a in soup.select('a[href*="wilma_pzl_doclist_page1408"]'):
+    page_param = None
+    for a in soup.select('a[href*="wilma_pzl_doclist_page"]'):
         href = urljoin(url, a["href"])
-        for value in parse_qs(urlparse(href).query).get("wilma_pzl_doclist_page1408", []):
-            if value.isdigit():
-                page_indices.add(int(value))
-    return events, page_indices
+        query = parse_qs(urlparse(href).query)
+        for name, values in query.items():
+            if name.startswith("wilma_pzl_doclist_page"):
+                page_param = name
+                page_indices.update(int(value) for value in values if value.isdigit())
+    return events, page_indices, page_param
 
 
 def retrieve() -> list[dict]:
     session = requests.Session()
     session.headers.update(HEADERS)
     found = {}
-    visited_signatures = set()
-    for page in range(MAX_PAGES):
-        params = {"pgId": "645"}
-        if page:
-            params["wilma_pzl_doclist_page1408"] = str(page)
-        response = session.get("https://www.wilsdruff.de/wilma.aspx", params=params, timeout=35)
-        response.raise_for_status()
-        events, page_indices = parse_page(response.content, response.url)
-        print(f"Seite {page + 1}: {len(events)} Termine, Seitennavigation {sorted(page_indices)}")
-        if not events:
-            if page == 0:
-                raise ValueError("Keine Termine auf der Startseite – Export wird abgebrochen")
-            break
-        signature = tuple((e["title"], str(e["day"]), str(e["start"])) for e in events)
-        if signature in visited_signatures:
-            break
-        visited_signatures.add(signature)
-        for event in events:
-            key = (event["title"], event["day"], event["location"])
-            found[key] = event
-        if page + 1 not in page_indices:
-            break
-    else:
-        raise ValueError("Seitengrenze erreicht; möglicherweise nicht alle Termine gelesen")
+    for source_name, source_id in SOURCES:
+        visited_signatures = set()
+        page_param = None
+        source_count = 0
+        for page in range(MAX_PAGES):
+            params = {"pgId": str(source_id)}
+            if page:
+                if page_param is None:
+                    break
+                params[page_param] = str(page)
+            response = session.get("https://www.wilsdruff.de/wilma.aspx", params=params, timeout=35)
+            response.raise_for_status()
+            events, page_indices, discovered_param = parse_page(response.content, response.url)
+            page_param = discovered_param or page_param
+            print(f"{source_name}, Seite {page + 1}: {len(events)} Termine, Seitennavigation {sorted(page_indices)}")
+            if not events:
+                if page == 0:
+                    raise ValueError(f"{source_name}: Keine Termine erkannt – Export abgebrochen")
+                break
+            signature = tuple((e["title"], str(e["day"]), str(e["start"])) for e in events)
+            if signature in visited_signatures:
+                break
+            visited_signatures.add(signature)
+            source_count += len(events)
+            for event in events:
+                # Erste Quelle gewinnt: UID und Ort bestehender Termine bleiben stabil.
+                key = (re.sub(r"\\s+", " ", event["title"]).casefold(), event["day"])
+                if key not in found:
+                    found[key] = event
+            if page + 1 not in page_indices:
+                break
+        else:
+            raise ValueError(f"{source_name}: Seitengrenze erreicht")
+        print(f"{source_name}: {source_count} Einträge vor Dublettenprüfung")
     if not found:
         raise ValueError("Keine Termine erkannt")
     return sorted(found.values(), key=lambda e: (e["day"], e["title"]))
@@ -125,7 +147,7 @@ def fold(line: str) -> list[str]:
 def calendar(events: list[dict]) -> str:
     lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Wilsdruff Kalender//DE",
              "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
-             "X-WR-CALNAME:Wilsdruff – Termine",
+             "X-WR-CALNAME:Wilsdruff – Termine und Veranstaltungen",
              "X-WR-TIMEZONE:Europe/Berlin"]
     stamp = datetime.now(ZoneInfo("UTC")).strftime("%Y%m%dT%H%M%SZ")
     for e in events:
