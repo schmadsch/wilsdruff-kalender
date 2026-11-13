@@ -7,7 +7,7 @@ X-WR-CALNAME:Wilsdruff – Termine
 X-WR-TIMEZONE:Europe/Berlin
 BEGIN:VEVENT
 UID:c547ddefb77d4ea5a9ca18fd@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Ortscchaftsrates Helbigsdorf-Blankenstein
 DTSTART:20261116T180000Z
 DTEND:20261116T190000Z
@@ -18,7 +18,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doc_id=7817#p190
 END:VEVENT
 BEGIN:VEVENT
 UID:dab30f617e3aa66e21e93ee5@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Erscheinungstermin Amtsblatt Ausgabe 23/2026
 DTSTART:20261118T230000Z
 DTEND:20261119T000000Z
@@ -31,7 +31,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doc_id=7691#p190
 END:VEVENT
 BEGIN:VEVENT
 UID:bea05a8a3f0fd870db9a16b9@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Ortschaftsrates Grumbach
 DTSTART:20261124T180000Z
 DTEND:20261124T190000Z
@@ -42,7 +42,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doc_id=7733#p190
 END:VEVENT
 BEGIN:VEVENT
 UID:7b5cfecd866f652d28784f23@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Ortschaftsrates Limbach-Birkenhain
 DTSTART:20261125T180000Z
 DTEND:20261125T190000Z
@@ -53,7 +53,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doc_id=7821#p190
 END:VEVENT
 BEGIN:VEVENT
 UID:ac47a2b18c54fdfe4832390d@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Erscheinungstermin Amtsblatt Ausgabe 24/2026
 DTSTART:20261202T230000Z
 DTEND:20261203T000000Z
@@ -66,7 +66,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doc_id=7692#p190
 END:VEVENT
 BEGIN:VEVENT
 UID:44321a855be1213f16722a99@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Technischen Ausschusses
 DTSTART:20261203T180000Z
 DTEND:20261203T190000Z
@@ -77,7 +77,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doclist_page1408
 END:VEVENT
 BEGIN:VEVENT
 UID:221be38752b2013572e43233@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Ortschaftsrates Braunsdorf
 DTSTART:20261207T180000Z
 DTEND:20261207T190000Z
@@ -88,7 +88,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doclist_page1408
 END:VEVENT
 BEGIN:VEVENT
 UID:5322ac546d12a5d408d0081f@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Ortschaftsrates Kaufbach
 DTSTART:20261207T183000Z
 DTEND:20261207T193000Z
@@ -99,7 +99,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doclist_page1408
 END:VEVENT
 BEGIN:VEVENT
 UID:f4d864e1edc639b0241e7105@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Stadtrates der Stadt Wilsdruff
 DTSTART:20261210T180000Z
 DTEND:20261210T190000Z
@@ -110,7 +110,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doclist_page1408
 END:VEVENT
 BEGIN:VEVENT
 UID:2c30970dc9b780e67bd12196@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Sitzung des Ortschaftsrates Limbach-Birkenhain
 DTSTART:20261216T180000Z
 DTEND:20261216T190000Z
@@ -121,7 +121,7 @@ URL:https://www.wilsdruff.de/wilma.aspx?pId=1905&wilma_pzl_doclist_page1408
 END:VEVENT
 BEGIN:VEVENT
 UID:9099083046ce27ad4fe23f56@wilsdruff-kalender
-DTSTAMP:20261113T051424Z
+DTSTAMP:20261113T121119Z
 SUMMARY:Erscheinungstermin Amtsblatt Ausgabe 25/2026
 DTSTART:20261216T230000Z
 DTEND:20261217T000000Z
